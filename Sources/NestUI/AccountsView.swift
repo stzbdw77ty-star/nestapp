@@ -95,8 +95,9 @@ private struct AddAccountView: View {
     }
 }
 
-private struct AccountDetailView: View {
+struct AccountDetailView: View {
     let account: LedgerAccount
+    init(account: LedgerAccount) { self.account = account }
     @Query private var entries: [TransactionRecord]
     @Query private var categories: [CategoryRecord]
     @Environment(PlanningStore.self) private var plans

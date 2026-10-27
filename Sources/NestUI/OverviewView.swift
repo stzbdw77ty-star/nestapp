@@ -154,7 +154,7 @@ struct OverviewView: View {
             ScrollView(.horizontal) {
                 HStack(spacing: 12) {
                     ForEach(book.accounts.filter(\.isBank)) { account in
-                        NavigationLink { AccountsView() } label: {
+                        NavigationLink { AccountDetailView(account: account) } label: {
                             VStack(alignment: .leading, spacing: 18) {
                                 HStack { Image(systemName: account.kind == .liability ? "creditcard" : "building.columns"); Spacer(); Image(systemName: "arrow.up.right").font(.caption) }
                                 VStack(alignment: .leading, spacing: 6) {
@@ -164,7 +164,7 @@ struct OverviewView: View {
                                 Text(account.kind == .liability ? "Amount owed · manual" : "AUD · manual records").font(.caption2).foregroundStyle(.secondary)
                             }.foregroundStyle(.primary).padding(18).frame(width: 210, alignment: .leading)
                                 .background(NestTheme.colour(account.kind == .liability ? "peach" : "mint").opacity(0.17), in: .rect(cornerRadius: 23))
-                        }.buttonStyle(.plain).accessibilityHint("Open your accounts")
+                        }.buttonStyle(.plain).accessibilityHint("Open this account and check its statement")
                     }
                 }
             }.scrollIndicators(.hidden)
