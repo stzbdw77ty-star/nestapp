@@ -22,6 +22,7 @@ struct WorkspaceSettingsView: View {
     @Query private var categories: [CategoryRecord]
     @Query private var entries: [TransactionRecord]
     @AppStorage("nest.workspace") private var selectedWorkspace = ""
+    @AppStorage("nest.appearance") private var appearance = "system"
     @State private var document = BackupDocument()
     @State private var exporting = false
     @State private var importing = false
@@ -47,6 +48,13 @@ struct WorkspaceSettingsView: View {
                     Button("Restore from a backup", systemImage: "square.and.arrow.down") { importing = true }
                     Text("A JSON backup includes transactions, categories, accounts, budgets, statement checks, goals, debts and your lifestyle plan. It contains personal financial information. Choose a private storage location. Nest does not upload it or sync it between devices.")
                         .font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            Section("Make it yours") {
+                Picker("Appearance", selection: $appearance) {
+                    Text("Use device setting").tag("system")
+                    Text("Light").tag("light")
+                    Text("Dark").tag("dark")
                 }
             }
             Section("About Nest") {

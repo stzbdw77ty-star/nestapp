@@ -4,9 +4,11 @@ A native iOS 17+ app for personal and household finances, built from the supplie
 
 ## What the MVP does
 
+The five tabs are **Home**, **Activity**, **Accounts**, **Budgets** and **More**. Home brings balances, monthly flows, quick entry, account tiles, budget progress and recent activity together. Reports, goals and data tools live under More. Appearance follows your device or a saved light/dark preference.
+
 - **Your own workspace:** starts empty, with a separate fictional demo you can switch to without mixing records.
 - **Activity:** add, edit, categorise and delete manual income, spending and transfers; search, filter and browse months. Pending items stay out of totals.
-- **Accounts:** cash, bank, savings, credit-card and loan balances; custom accounts; opening balances and balanced multi-line adjustments. Positive liability balances mean money owed.
+- **Accounts:** cash, bank, savings, credit-card and loan balances; custom accounts; a guided opening-balance form and balanced multi-line adjustments. Positive liability balances mean money owed.
 - **Statement checks:** compare a dated closing balance, require an exact match, then lock included postings. Backdated changes cannot silently invalidate a checked statement.
 - **Budgets:** category limits by month, actual spending, remaining amounts and clear overspending indicators.
 - **Reports:** monthly income/spending, recorded net worth, trial balance and spreadsheet-safe journal CSV export.

@@ -1,7 +1,9 @@
 import SwiftUI
 
 enum NestTheme {
-    static let accent = Color(red: 0.40, green: 0.29, blue: 0.72)
+    static let accent = Color("NestAccent", bundle: .module)
+    static let canvas = Color("NestCanvas", bundle: .module)
+    static let surface = Color("NestSurface", bundle: .module)
     static func colour(_ name: String) -> Color {
         switch name {
         case "mint": Color(red: 0.39, green: 0.72, blue: 0.58)
@@ -15,11 +17,10 @@ enum NestTheme {
 }
 
 struct NestCard: ViewModifier {
-    @Environment(\.colorScheme) private var scheme
     func body(content: Content) -> some View {
         content.padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(scheme == .dark ? Color(white: 0.13) : .white, in: .rect(cornerRadius: 26))
+            .background(NestTheme.surface, in: .rect(cornerRadius: 26))
     }
 }
 
@@ -40,10 +41,9 @@ struct CategoryIcon: View {
 }
 
 struct NestPage: ViewModifier {
-    @Environment(\.colorScheme) private var scheme
     func body(content: Content) -> some View {
         content.scrollContentBackground(.hidden)
-            .background(scheme == .dark ? Color(white: 0.075) : Color(red: 0.98, green: 0.96, blue: 0.93))
+            .background(NestTheme.canvas)
     }
 }
 extension View {

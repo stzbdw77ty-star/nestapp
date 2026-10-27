@@ -18,3 +18,7 @@ No source or artwork from these projects has been copied into the app. Adding Sw
 ## EasyUI
 
 The requested https://easyui.site/components page returned an environment proxy 403. Its components and license have not been inspected or copied. The required EasyUI domains were added to the environment configuration draft; runtime access requires the settings change to be applied. Native cards, forms, summaries and navigation currently follow the supplied archive's design. Do not attribute them to EasyUI.
+
+## Dollarwise reference
+
+The requested competitor research is incomplete: general web search and App Store lookup are blocked by the environment proxy, and the exact Dollarwise product URL has not been verified. No Dollarwise screenshots, assets, source code or branding have been copied. Nest’s dashboard is an original implementation: a plum gradient balance card, warm background, pastel account tiles, native budget progress and compact recent activity.

@@ -18,7 +18,7 @@ products += [
 ]
 targets += [
     .target(name: "NestServices", dependencies: ["NestCore"]),
-    .target(name: "NestUI", dependencies: ["NestCore", "NestServices"]),
+    .target(name: "NestUI", dependencies: ["NestCore", "NestServices"], resources: [.process("Resources")]),
     .executableTarget(name: "NestPreview", dependencies: ["NestUI"]),
     .testTarget(name: "NestServicesTests", dependencies: ["NestCore", "NestServices"]),
     .testTarget(name: "NestUITests", dependencies: ["NestCore", "NestUI"])

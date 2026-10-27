@@ -8,7 +8,6 @@ struct TransactionScreen: View {
     let onCategories: () -> Void
     let onOpen: (UUID) -> Void
     @Environment(\.workspaceMode) private var mode
-    @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var month = Date.now
     @State private var search = ""
@@ -40,7 +39,7 @@ struct TransactionScreen: View {
             ScrollView {
                 pageContent
             }
-            .background(scheme == .dark ? Color(white: 0.075) : Color(red: 0.98, green: 0.96, blue: 0.93))
+            .background(NestTheme.canvas)
             .navigationTitle("Nest")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

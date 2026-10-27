@@ -5,13 +5,14 @@ struct NestTabs: View {
     @Environment(\.workspaceMode) private var mode
     var body: some View {
         TabView {
+            OverviewView().tabItem { Label("Home", systemImage: "square.grid.2x2.fill") }
             TransactionsView().tabItem { Label("Activity", systemImage: "list.bullet.rectangle") }
-            AccountsView().tabItem { Label("Accounts", systemImage: "building.columns") }
+            NavigationStack { AccountsView() }.tabItem { Label("Accounts", systemImage: "building.columns") }
             NavigationStack { BudgetsView() }.tabItem { Label("Budgets", systemImage: "chart.pie") }
-            ReportsView().tabItem { Label("Reports", systemImage: "chart.bar.fill") }
             NavigationStack {
                 List {
                     Section("Plan & explore") {
+                        NavigationLink { ReportsView() } label: { Label("Reports & exports", systemImage: "chart.bar.fill") }
                         NavigationLink { GoalsView() } label: { Label("Savings goals", systemImage: "flag") }
                         NavigationLink { InsightsView() } label: { Label("Spending insights", systemImage: "chart.xyaxis.line") }
                         NavigationLink { CoachView() } label: { Label("Offline companion", systemImage: "bubble.left.and.bubble.right") }

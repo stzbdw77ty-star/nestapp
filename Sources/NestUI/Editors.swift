@@ -118,7 +118,8 @@ struct TransactionDetailView: View {
 }
 
 struct AddTransactionView: View {
-    var body: some View { TransactionEditor(record: nil) }
+    var kind: EntryKind = .expense
+    var body: some View { TransactionEditor(record: nil, initialKind: kind) }
 }
 
 private struct TransactionEditor: View {
@@ -143,12 +144,12 @@ private struct TransactionEditor: View {
     private var locked: Bool { record.map { plans.snapshot.books.lockedEntryIDs.contains($0.id) } ?? false }
     private var imported: Bool { record?.providerID?.hasPrefix("nest-demo/") == true }
 
-    init(record: TransactionRecord?) {
+    init(record: TransactionRecord?, initialKind: EntryKind = .expense) {
         self.record = record
         // Intentional draft: cancelling must leave the persisted record unchanged.
         _merchant = State(initialValue: record?.merchant ?? "")
         _amount = State(initialValue: record.map { editableAmount($0.cents) } ?? "")
-        _kind = State(initialValue: record?.value.kind ?? .expense)
+        _kind = State(initialValue: record?.value.kind ?? initialKind)
         _categoryID = State(initialValue: record?.categoryID)
         _date = State(initialValue: record?.date ?? .now)
         _pending = State(initialValue: record?.pending ?? false)

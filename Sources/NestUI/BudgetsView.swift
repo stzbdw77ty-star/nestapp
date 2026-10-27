@@ -103,6 +103,6 @@ struct MonthControl: View {
     }
     private func move(_ offset: Int) {
         let start = Calendar.current.dateInterval(of: .month, for: month)?.start ?? month
-        if let next = Calendar.current.date(byAdding: .month, value: offset, to: start) { month = next }
+        if let next = Calendar.current.date(byAdding: .month, value: offset, to: start), (1900...2100).contains(Calendar.current.component(.year, from: next)) { month = next }
     }
 }

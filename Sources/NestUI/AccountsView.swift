@@ -12,7 +12,6 @@ struct AccountsView: View {
         try? AccountingBook(categories: categories.map(\.value), entries: entries.map(\.value), books: plans.snapshot.books)
     }
     var body: some View {
-        NavigationStack {
             List {
                 Section {
                     Text("Every account, a clearer picture.").font(.title2.bold())
@@ -56,7 +55,6 @@ struct AccountsView: View {
             }.navigationTitle("Your accounts").nestPage()
                 .sheet(isPresented: $adding) { AddAccountView() }
                 .sheet(isPresented: $journal) { JournalEditor() }
-        }
     }
 }
 
@@ -107,6 +105,7 @@ private struct AccountDetailView: View {
     @State private var message: String?
     @State private var confirmReconcile = false
     @State private var confirmUnlock = false
+    @State private var opening = false
     private var book: AccountingBook? { try? AccountingBook(categories: categories.map(\.value), entries: entries.map(\.value), books: plans.snapshot.books) }
     private var cutoff: Date {
         (Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: date)) ?? date).addingTimeInterval(-0.001)
@@ -125,6 +124,13 @@ private struct AccountDetailView: View {
                 Section("Recorded balance") {
                     Text(Money.text(book.balance(accountID: account.id))).font(.largeTitle.bold())
                     Text(account.kind == .liability ? "Positive means money owed; negative means a credit balance." : "Posted transactions only. Pending entries are excluded.").font(.caption)
+                }
+                Section {
+                    if plans.snapshot.books.journals.contains(where: { $0.id == account.id }) {
+                        Text("An opening balance has been recorded. Corrections are available through Reports → Adjustments.").font(.caption)
+                    } else {
+                        Button("Enter an opening balance") { opening = true }
+                    }
                 }
                 if account.isBank {
                     Section("Check against your statement") {
@@ -161,6 +167,9 @@ private struct AccountDetailView: View {
             }
             if let message { Text(message).font(.footnote) }
         }.navigationTitle(account.name)
+            .sheet(isPresented: $opening) {
+                OpeningBalanceView(account: account, earliest: book?.journals.filter { $0.lines.contains { $0.accountID == account.id } }.map(\.date).min())
+            }
             .confirmationDialog("Confirm this statement match?", isPresented: $confirmReconcile) {
                 Button("Confirm and lock entries") {
                     guard let book, let amount = statementCents else { return }
@@ -251,5 +260,66 @@ struct JournalEditor: View {
             try plans.update { $0.books = next }
             dismiss()
         } catch { self.error = "\(error.localizedDescription) If this changes a checked statement, remove that check in Accounts first." }
+    }
+}
+
+private struct OpeningBalanceView: View {
+    let account: LedgerAccount
+    let earliest: Date?
+    @Environment(PlanningStore.self) private var plans
+    @Environment(\.dismiss) private var dismiss
+    @Query private var categories: [CategoryRecord]
+    @Query private var entries: [TransactionRecord]
+    @State private var amount = ""
+    @State private var date: Date
+    @State private var error: String?
+    init(account: LedgerAccount, earliest: Date?) {
+        self.account = account; self.earliest = earliest
+        // A one-time seed for the opening-balance draft.
+        _date = State(initialValue: earliest.flatMap { Calendar.current.date(byAdding: .day, value: -1, to: $0) } ?? .now)
+    }
+    var body: some View {
+        NavigationStack {
+            Form {
+                Text(account.name).font(.headline)
+                TextField("Opening balance in AUD", text: $amount)
+                DatePicker("Balance date", selection: $date, in: ...Date.now, displayedComponents: .date)
+                Text(account.kind == .liability
+                     ? "Enter the amount you owed before your first tracked transaction. A negative amount means the card was in credit."
+                     : "Enter the balance before your first tracked transaction. Use a negative amount for an overdraft.").font(.footnote)
+                Text("This creates one opening entry against opening equity. It does not count as income or spending. Choose a date before your first tracked activity; do not include the opening balance again in Activity.").font(.caption)
+                if let error { Text(error).foregroundStyle(.red) }
+            }.navigationTitle("Opening balance")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                    ToolbarItem(placement: .confirmationAction) { Button("Save", action: save) }
+                }
+        }
+    }
+    private func save() {
+        let value = amount.trimmingCharacters(in: .whitespacesAndNewlines)
+        let negative = value.hasPrefix("-")
+        guard let cents = Money.parse(negative ? String(value.dropFirst()) : value) else {
+            error = "Enter an AUD amount with up to two decimal places. If the opening balance is zero, no opening entry is needed."; return
+        }
+        let day = Calendar.current.startOfDay(for: date)
+        if let earliest, day >= Calendar.current.startOfDay(for: earliest) {
+            error = "Choose a date before the first recorded activity in this account."; return
+        }
+        guard !plans.snapshot.books.journals.contains(where: { $0.id == account.id }) else {
+            error = "This account already has an opening balance."; return
+        }
+        let debit = account.kind.debitNormal != negative
+        let journal = JournalEntry(id: account.id, memo: "Opening balance: \(account.name)", date: day, lines: [
+            JournalLine(accountID: account.id, debit: debit ? cents : 0, credit: debit ? 0 : cents),
+            JournalLine(accountID: ChartOfAccounts.capitalID, debit: debit ? 0 : cents, credit: debit ? cents : 0)
+        ])
+        do {
+            var next = plans.snapshot.books; next.journals.append(journal)
+            let book = try AccountingBook(categories: categories.map(\.value), entries: entries.map(\.value), books: next)
+            try book.validateReconciliations(next.reconciliations)
+            try plans.update { $0.books = next }
+            dismiss()
+        } catch { self.error = "That opening balance didn’t save. Remove affected statement checks before changing an earlier balance." }
     }
 }

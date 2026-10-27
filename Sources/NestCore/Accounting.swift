@@ -25,7 +25,7 @@ public enum ChartOfAccounts {
     public static let defaults: [LedgerAccount] = [
         .init(id: bankID, name: "Everyday account", kind: .asset, isBank: true),
         .init(id: savingsID, name: "Savings account", kind: .asset, isBank: true),
-        .init(id: payableID, name: "Loans payable", kind: .liability),
+        .init(id: payableID, name: "Loans payable", kind: .liability, isBank: true),
         .init(id: cardID, name: "Credit card", kind: .liability, isBank: true),
         .init(id: capitalID, name: "Owner contributions / opening equity", kind: .equity),
         .init(id: incomeID, name: "Income", kind: .income)
@@ -124,7 +124,7 @@ public struct AccountingBook: Sendable {
         guard Set(accounts.map(\.id)).count == accounts.count else { throw AccountingError.invalidAccounts }
         let bankIDs = Set(accounts.filter(\.isBank).map(\.id))
         var projected: [JournalEntry] = []
-        for entry in entries where !entry.pending {
+        for entry in entries {
             let bank = entry.accountID ?? ChartOfAccounts.bankID
             guard bankIDs.contains(bank), entry.cents > 0, entry.cents <= 99_999_999_999 else { throw AccountingError.invalidAccounts }
             let debit: UUID
@@ -136,9 +136,11 @@ public struct AccountingBook: Sendable {
                 debit = entry.transferAccountID ?? ChartOfAccounts.savingsID; credit = bank
                 guard bankIDs.contains(debit), debit != credit else { throw AccountingError.invalidAccounts }
             }
-            projected.append(JournalEntry(id: entry.id, memo: entry.merchant, date: entry.date, lines: [
+            let journal = JournalEntry(id: entry.id, memo: entry.merchant, date: entry.date, lines: [
                 JournalLine(accountID: debit, debit: entry.cents), JournalLine(accountID: credit, credit: entry.cents)
-            ]))
+            ])
+            try journal.validate(accounts: accounts)
+            if !entry.pending { projected.append(journal) }
         }
         journals = (projected + books.journals).sorted { $0.date == $1.date ? $0.id.uuidString < $1.id.uuidString : $0.date > $1.date }
         guard Set(journals.map(\.id)).count == journals.count else { throw AccountingError.invalidJournal }
@@ -181,7 +183,7 @@ public struct AccountingBook: Sendable {
     public func journalCSV(from start: Date? = nil, through date: Date = .now) -> String {
         func quote(_ text: String) -> String {
             // Keep spreadsheet applications from evaluating user-entered descriptions.
-            let safe = ["=", "+", "-", "@", "\t", "\r", "\n"].contains(where: text.hasPrefix) ? "'" + text : text
+            let safe = ["=", "+", "-", "@", "\t", "\r", "\n"].contains(where: { text.hasPrefix($0) || text.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix($0) }) ? "'" + text : text
             return "\"" + safe.replacingOccurrences(of: "\"", with: "\"\"") + "\""
         }
         let formatter = ISO8601DateFormatter()

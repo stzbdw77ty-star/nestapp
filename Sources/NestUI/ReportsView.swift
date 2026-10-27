@@ -25,7 +25,6 @@ struct ReportsView: View {
     private var period: DateInterval { Calendar.current.dateInterval(of: .month, for: month) ?? DateInterval(start: month, duration: 0) }
     private var end: Date { min(.now, period.end.addingTimeInterval(-0.001)) }
     var body: some View {
-        NavigationStack {
             List {
                 Section {
                     Text("Know where you stand.").font(.title2.bold())
@@ -69,7 +68,6 @@ struct ReportsView: View {
                 .fileExporter(isPresented: $exporting, document: document, contentType: .commaSeparatedText, defaultFilename: "Nest-journal-\(month.formatted(.dateTime.year().month(.twoDigits)))") { result in
                     if case .failure = result { message = "The report wasn’t exported. Please try again." }
                 }
-        }
     }
 }
 private struct TrialBalanceView: View {

@@ -14,6 +14,7 @@ extension EnvironmentValues {
 
 public struct NestRoot: View {
     @AppStorage("nest.workspace") private var selectedWorkspace = ""
+    @AppStorage("nest.appearance") private var appearance = "system"
     private let inMemory: Bool
     public init(inMemory: Bool = false) { self.inMemory = inMemory }
     public var body: some View {
@@ -26,6 +27,7 @@ public struct NestRoot: View {
                 WelcomeView { selectedWorkspace = $0.rawValue }
             }
         }.tint(NestTheme.accent).fontDesign(.rounded)
+            .preferredColorScheme(appearance == "dark" ? .dark : appearance == "light" ? .light : nil)
     }
 }
 
@@ -35,6 +37,7 @@ private struct WorkspaceHost: View {
     @State private var container: ModelContainer?
     @State private var plans: PlanningStore?
     @State private var loadFailed = false
+    @AppStorage("nest.workspace") private var selectedWorkspace = ""
     var body: some View {
         Group {
             if let container, let plans {
@@ -45,7 +48,10 @@ private struct WorkspaceHost: View {
                     Label("Let’s try that again", systemImage: "externaldrive.badge.exclamationmark")
                 } description: {
                     Text("We couldn’t open your workspace. Your saved data hasn’t been deleted.")
-                } actions: { Button("Try again", action: load) }
+                } actions: {
+                    Button("Try again", action: load)
+                    Button("Choose another workspace") { selectedWorkspace = "" }
+                }
             } else { ProgressView("Getting your space ready…") }
         }.task { if container == nil { load() } }
     }
