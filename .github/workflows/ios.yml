@@ -1,0 +1,32 @@
+name: iOS MVP
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-checks:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: xcodebuild -version && swift --version
+      - name: Install SwiftLint
+        run: command -v swiftlint || brew install swiftlint
+      - name: SwiftLint correctness checks
+        run: swiftlint lint --strict
+      - name: Core, service and SwiftData tests
+        run: swift test --parallel
+      - name: Build iPhone Simulator app
+        run: >-
+          xcodebuild -project Nest.xcodeproj -scheme Nest
+          -configuration Debug -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nest-iPhone-Simulator
+          path: DerivedData/Build/Products/Debug-iphonesimulator/Nest.app

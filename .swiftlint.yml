@@ -1,0 +1,13 @@
+included:
+  - Sources
+  - iOS
+  - Tests
+excluded:
+  - .build
+# A focused correctness baseline for the imported prototype.
+only_rules:
+  - force_cast
+  - force_try
+  - duplicate_imports
+  - return_arrow_whitespace
+  - void_return
